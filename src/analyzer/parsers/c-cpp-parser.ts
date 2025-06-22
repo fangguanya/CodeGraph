@@ -311,7 +311,7 @@ export class CCppParser {
      * @returns A promise resolving to the path of the temporary result file.
      */
     async parseFile(file: FileInfo): Promise<string> {
-        logger.info(`[CCppParser] Starting C/C++ parsing for: ${file.name}`);
+        logger.info(`[CCppParser] Starting C/C++ parsing for: ${file.name}: ${file.path}`);
         await ensureTempDir();
         const tempFilePath = getTempFilePath(file.path);
         const absoluteFilePath = path.resolve(file.path);

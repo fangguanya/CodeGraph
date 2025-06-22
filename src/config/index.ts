@@ -66,16 +66,42 @@ const config: Config = {
     '**/public/**', // Ignore public assets directory
 
     '.DS_Store', // macOS specific
+    ".cursor/**",
+    ".idea/**",
+    ".vs/**",
+    ".vscode/**",
+    "DerivedDataBuildWorker/**",
+    "Design/**",
+    "FeaturePacks/**",
+    "OutSourceClient/**",
+    "Samples/**",
+    "Server/**",
+    "Templates/**",
+    "Tools/**",
+    "Engine/Saved/**",
+    "**/Intermediate/**",
+    "**/Build/**",
+    "**/Binaries/**",
+    "Client/Content/**",
+    "**/ThirdParty/**",
+  
+    "**/*.pyc",
+    "**/bin/**",
+    "**/obj/**",
+    "**/*.class",
+    "**/target/**",
+    "**/*.log",
   ],
   supportedExtensions: [
  // Corrected array syntax
-    '.ts', '.tsx', '.js', '.jsx', // TS/JS/JSX
-    '.py',                       // Python
-    '.c', '.h', '.cpp', '.hpp', '.cc', '.hh' // C/C++
-    , '.java',                   // Java
-    '.cs',                       // C#
-    '.go',                       // Go
-    '.sql'                       // SQL
+    // '.ts', '.tsx', '.js', '.jsx', // TS/JS/JSX
+    // '.py',                       // Python
+    // '.c', '.h', '.cpp', '.hpp', '.cc', '.hh' // C/C++
+    // , '.java',                   // Java
+    // '.cs',                       // C#
+    // '.go',                       // Go
+    // '.sql',                       // SQL
+    ".cpp",".c",".h",".hpp",".cs",".lua",".cc",".hh"
   ],
 
 };

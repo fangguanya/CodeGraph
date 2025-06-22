@@ -1,1 +1,1 @@
-node dist/index.js analyze D:\c7_i9_EngineDev -e .cpp,.c,.h,.hpp,.cs,.lua --reset-db --update-schema --ignore ".cursor/**,.idea/**,.vs/**,.vscode/**,DerivedDataBuildWorker/**,Design/**,FeaturePacks/**,OutSourceClient/**,Samples/**,Server/**,Templates/**,Tools/**,Engine/Saved/**,**/Intermediate/**,**/Build/**,**/Binaries/**,Client/Content/**
+node dist/index.js analyze D:\c7_i9_EngineDev
