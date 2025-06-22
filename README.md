@@ -202,12 +202,15 @@ The CodeGraph setup package includes pre-configured MCP settings for both server
 
 2. **Install Dependencies**:
    ```bash
-   npm install
+   -- npm install
+   npm install --legacy-peer-deps
+   npm audit fix --legacy-peer-deps
    ```
 
 3. **Compile TypeScript**:
    ```bash
    npm run build
+   npm run build --legacy-peer-deps
    ```
 
 4. **Configure Environment**: Create a `.env` file for Neo4j credentials
