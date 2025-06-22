@@ -8,7 +8,7 @@ import { generateEntityId, generateInstanceId } from '../parser-utils.js';
  * Note: Actual path resolution for includes is complex and not fully implemented here.
  * This creates relationships based on the path string found.
  */
-export function resolveCIncludes(sourceFile: SourceFile, fileNode: AstNode, context: ResolverContext): void {
+export function resolveCIncludes(sourceFile: SourceFile | null, fileNode: AstNode, context: ResolverContext): void {
     // Only process C/C++ files (double check, though called conditionally)
     if (fileNode.language !== 'C' && fileNode.language !== 'C++') {
         return;

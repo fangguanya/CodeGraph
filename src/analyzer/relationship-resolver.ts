@@ -74,17 +74,11 @@ export class RelationshipResolver {
                 }
             }
 
-            // Resolve C/C++ Includes (placeholder resolution)
-            // Note: sourceFile is passed for consistency but not used for C/C++ AST access here
+            // Resolve C/C++ Includes (using node data, not ts-morph)
             if (fileNode.language === 'C' || fileNode.language === 'C++') {
-                 // We need a way to get the ts-morph SourceFile even for C/C++ if we want to use it
-                 // For now, pass undefined or handle differently if ts-morph isn't used for C/C++ resolution
-                 const cSourceFile = project.getSourceFile(fileNode.filePath); // Attempt to get it anyway
-                 if (cSourceFile) {
-                    resolveCIncludes(cSourceFile, fileNode, currentContext);
-                 } else {
-                     logger.warn(`Could not find ts-morph SourceFile for C/C++ file: ${fileNode.filePath}. Skipping include resolution.`);
-                 }
+                // C++ files don't need ts-morph SourceFile, they should use their own AST data
+                // Pass null for sourceFile since C++ resolver should work with node data
+                resolveCIncludes(null, fileNode, currentContext);
             }
 
             // TODO: Add calls to language-specific resolvers for Python, Java, Go, C#, SQL etc.
