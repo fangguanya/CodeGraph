@@ -22,6 +22,8 @@ interface Config {
   storageBatchSize: number;
   /** Directory to store temporary analysis files. */
   tempDir: string;
+  /** Maximum concurrent file parsing operations to prevent "too many open files" error. */
+  maxConcurrentParses: number;
   /** Glob patterns for files/directories to ignore during scanning. */
   ignorePatterns: string[];
   /** Supported file extensions for parsing. */
@@ -30,12 +32,13 @@ interface Config {
 
 const config: Config = {
   logLevel: process.env.LOG_LEVEL || 'info',
-  neo4jUrl: process.env.NEO4J_URL || 'bolt://localhost:7687',
+  neo4jUrl: process.env.NEO4J_URL || 'neo4j://127.0.0.1:7687',
   neo4jUser: process.env.NEO4J_USER || 'neo4j',
   neo4jPassword: process.env.NEO4J_PASSWORD || 'password', // Replace with your default password
-  neo4jDatabase: process.env.NEO4J_DATABASE || 'codegraph',
+  neo4jDatabase: process.env.NEO4J_DATABASE || 'neo4j',
   storageBatchSize: parseInt(process.env.STORAGE_BATCH_SIZE || '100', 10),
   tempDir: path.resolve(process.cwd(), process.env.TEMP_DIR || './analysis-data/temp'),
+  maxConcurrentParses: parseInt(process.env.MAX_CONCURRENT_PARSES || '20', 10),
   ignorePatterns: [
     '**/node_modules/**',
     '**/.git/**',
@@ -110,6 +113,17 @@ const config: Config = {
 if (isNaN(config.storageBatchSize) || config.storageBatchSize <= 0) {
   console.warn(`Invalid STORAGE_BATCH_SIZE found, defaulting to 100. Value: ${process.env.STORAGE_BATCH_SIZE}`);
   config.storageBatchSize = 100;
+}
+
+// Validate maxConcurrentParses
+if (isNaN(config.maxConcurrentParses) || config.maxConcurrentParses <= 0) {
+  console.warn(`Invalid MAX_CONCURRENT_PARSES found, defaulting to 20. Value: ${process.env.MAX_CONCURRENT_PARSES}`);
+  config.maxConcurrentParses = 20;
+}
+
+// Warn if concurrency is too high
+if (config.maxConcurrentParses > 100) {
+  console.warn(`MAX_CONCURRENT_PARSES is very high (${config.maxConcurrentParses}). This may cause "too many open files" errors.`);
 }
 
 export default config;

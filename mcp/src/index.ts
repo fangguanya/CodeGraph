@@ -63,10 +63,10 @@ server.tool(
         `"${absoluteAnalysisDir}"`,
  // Quote path
         '--update-schema',
-        '--neo4j-url', 'bolt://localhost:7687',
+        '--neo4j-url', 'neo4j://127.0.0.1:7687',
         '--neo4j-user', 'neo4j',
         '--neo4j-password', 'test1234',
-        '--neo4j-database', 'codegraph'
+        '--neo4j-database', 'neo4j'
       ].join(' ');
 
       console.error(`[MCP Server Log] Constructed command: ${commandString}`);

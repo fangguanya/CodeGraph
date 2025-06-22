@@ -141,7 +141,7 @@ The CodeGraph setup package includes pre-configured MCP settings for both server
       "command": "mcp-neo4j-cypher",
       "args": [
         "--db-url",
-        "bolt://localhost:7687?database=codegraph",
+        "neo4j://127.0.0.1:7687?database=neo4j",
         "--username",
         "neo4j",
         "--password",

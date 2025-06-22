@@ -23,6 +23,7 @@ import { parseImports } from './parsers/import-parser.js'; // Add import parser
 
 import { createContextLogger } from '../utils/logger.js';
 import { ParserError } from '../utils/errors.js';
+import { ConcurrencyController } from '../utils/concurrency.js';
 import config from '../config/index.js';
 import { generateEntityId, generateInstanceId } from './parser-utils.js';
 import ts from 'typescript';
@@ -41,6 +42,7 @@ export class Parser {
     private csharpParser: CSharpParser;
     // private sqlParser: SqlParser; // Temporarily disabled
     private tsResults: Map<string, SingleFileParseResult> = new Map(); // Store TS results in memory
+    private concurrencyController: ConcurrencyController; // 并发控制器
 
     constructor() {
         // Initialize Project using the main tsconfig.json
@@ -56,7 +58,8 @@ export class Parser {
         this.csharpParser = new CSharpParser();
         // this.sqlParser = new SqlParser(); // Temporarily disabled
         // Removed tsParser instantiation
-        logger.info('Parser initialized (SQL parser temporarily disabled).');
+        this.concurrencyController = new ConcurrencyController(config.maxConcurrentParses);
+        logger.info(`Parser initialized with max ${config.maxConcurrentParses} concurrent file parses (SQL parser temporarily disabled).`);
     }
 
     /**
@@ -74,26 +77,55 @@ export class Parser {
         const tsFilesToAdd: string[] = [];
 
         for (const file of files) {
-            let parsePromise: Promise<string | null> | null = null;
             try {
                 switch (file.extension) {
                     case '.py':
-                        parsePromise = this.pythonParser.parseFile(file);
+                        parsePromises.push(
+                            this.concurrencyController.execute(() => this.pythonParser.parseFile(file))
+                                .catch(err => {
+                                    logger.error(`Parsing failed for ${file.path}: ${err.message}`);
+                                    return null;
+                                })
+                        );
                         break;
                     case '.c':
                     case '.cpp':
                     case '.h':
                     case '.hpp':
-                        parsePromise = this.cppParser.parseFile(file);
+                        parsePromises.push(
+                            this.concurrencyController.execute(() => this.cppParser.parseFile(file))
+                                .catch(err => {
+                                    logger.error(`Parsing failed for ${file.path}: ${err.message}`);
+                                    return null;
+                                })
+                        );
                         break;
                     case '.java':
-                        parsePromise = this.javaParser.parseFile(file);
+                        parsePromises.push(
+                            this.concurrencyController.execute(() => this.javaParser.parseFile(file))
+                                .catch(err => {
+                                    logger.error(`Parsing failed for ${file.path}: ${err.message}`);
+                                    return null;
+                                })
+                        );
                         break;
                     case '.go':
-                        parsePromise = this.goParser.parseFile(file);
+                        parsePromises.push(
+                            this.concurrencyController.execute(() => this.goParser.parseFile(file))
+                                .catch(err => {
+                                    logger.error(`Parsing failed for ${file.path}: ${err.message}`);
+                                    return null;
+                                })
+                        );
                         break;
                     case '.cs':
-                        parsePromise = this.csharpParser.parseFile(file);
+                        parsePromises.push(
+                            this.concurrencyController.execute(() => this.csharpParser.parseFile(file))
+                                .catch(err => {
+                                    logger.error(`Parsing failed for ${file.path}: ${err.message}`);
+                                    return null;
+                                })
+                        );
                         break;
                     // case '.sql': // Temporarily disabled
                     //     parsePromise = this.sqlParser.parseFile(file);
@@ -107,7 +139,7 @@ export class Parser {
                         // Add TS/JS files to the project instead of calling a separate parser
                         logger.debug(`Adding TS/JS file to project: ${file.path}`);
                         tsFilesToAdd.push(file.path);
-                        parsePromise = Promise.resolve(null); // No JSON file generated for TS/JS in Pass 1
+                        parsePromises.push(Promise.resolve(null)); // No JSON file generated for TS/JS in Pass 1
                         break;
                     default:
                         const supportedNonSql = config.supportedExtensions.filter(ext => ext !== '.sql');
@@ -116,20 +148,12 @@ export class Parser {
                         } else if (file.extension === '.sql') {
                              logger.info(`Skipping SQL file due to parser being temporarily disabled: ${file.path}`);
                         }
-                        parsePromise = Promise.resolve(null);
+                        parsePromises.push(Promise.resolve(null));
                 }
             } catch (error: any) {
                  logger.error(`Error initiating processing for ${file.path}: ${error.message}`);
-                 parsePromise = Promise.resolve(null);
+                 parsePromises.push(Promise.resolve(null));
             }
-             if (parsePromise) {
-                 parsePromises.push(
-                     parsePromise.catch(err => {
-                         logger.error(`Parsing failed for ${file.path}: ${err.message}`);
-                         return null;
-                     })
-                 );
-             }
         }
 
         if (tsFilesToAdd.length > 0) {
